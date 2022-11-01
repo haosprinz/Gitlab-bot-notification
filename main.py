@@ -1,14 +1,10 @@
 from flask import Flask, request, jsonify
 
 from message import send_to_all
-from settings import AUTH_MSG
 
 app = Flask(__name__)
 
-try:
-    authmsg = AUTH_MSG
-except:
-    raise Exception("The authorization messsage file is invalid")
+edging = '----------------------------------------------------------------\n'
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -48,10 +44,10 @@ def generatePushMsg(data):
     msg = '*{0} ({1}) - {2} new commits*\n' \
         .format(data['project']['name'], data['project']['default_branch'], data['total_commits_count'])
     for commit in data['commits']:
-        msg += '----------------------------------------------------------------\n'
+        msg += edging
         msg += commit['message'].rstrip()
         msg += '\n' + commit['url'].replace("_", "\_") + '\n'
-    msg += '----------------------------------------------------------------\n'
+    msg += edging
     return msg
 
 
@@ -79,22 +75,20 @@ def generateIssueMsg(data):
         msg = '*{0}* issue assigned to *{1}*:\n' \
             .format(data['project']['name'], assignees)
 
-    msg = msg + '[{0}]({1})' \
-        .format(data['object_attributes']['title'], data['object_attributes']['url'])
+    msg += '[{0}]({1})'.format(data['object_attributes']['title'], data['object_attributes']['url'])
     return msg
 
 
 def generateCommentMsg(data):
     ntype = data['object_attributes']['noteable_type']
     if ntype == 'Commit':
-        msg = 'note to commit'
+        return 'note to commit'
     elif ntype == 'MergeRequest':
-        msg = 'note to MergeRequest'
+        return 'note to MergeRequest'
     elif ntype == 'Issue':
-        msg = 'note to Issue'
+        return 'note to Issue'
     elif ntype == 'Snippet':
-        msg = 'note on code snippet'
-    return msg
+        return 'note on code snippet'
 
 
 def generateMergeRequestMsg(data):
@@ -107,11 +101,11 @@ def generateMergeRequestMsg(data):
         data['object_attributes']['target_branch'],
         data['object_attributes']['action'].upper())
 
-    msg += '----------------------------------------------------------------\n'
+    msg += edging
     msg += '\n' + data['object_attributes']['url'].replace("_", "\_") + '\n'
     msg += '\n' + 'name: ' + data['user']['name']
     msg += '\n' + 'nickname: ' + data['user']['username'] + '\n'
-    msg += '----------------------------------------------------------------\n'
+    msg += edging
     return msg
 
 
@@ -128,11 +122,11 @@ def generatePipelineMsg(data):
         data['object_attributes']['ref'],
         )
 
-    msg += '----------------------------------------------------------------\n'
+    msg += edging
     msg += f"\n*pipeline status: {data['object_attributes']['status']}*\n"
     msg += f"\n*name: {data['user']['name']}*\n"
     msg += f"*nickname: {data['user']['username']}*\n"
-    msg += '----------------------------------------------------------------\n'
+    msg += edging
     return msg
 
 
